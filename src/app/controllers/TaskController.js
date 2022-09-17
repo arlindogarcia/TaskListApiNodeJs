@@ -21,12 +21,44 @@ class TaskController {
       return res.status(400).json({ error: 'Dados inválidos' });
     }
 
-    const { task: taskCreated } = await Task.create({
+    const taskCreated = await Task.create({
       user_id: req.userId,
       task,
     });
 
-    return res.json({ task: taskCreated });
+    return res.json(taskCreated);
+  }
+
+  async update(req, res) {
+    const { task_id } = req.params;
+
+    const task = await Task.findByPk(task_id);
+
+    if (!task) {
+      return res.status(400).json({ error: 'Tarefa inexistente' });
+    }
+
+    const taskUpdated = await task.update(req.body);
+
+    return res.json(taskUpdated);
+  }
+
+  async delete(req, res) {
+    const { task_id } = req.params;
+
+    const task = await Task.findByPk(task_id);
+
+    if (!task) {
+      return res.status(400).json({ error: 'Tarefa inexistente' });
+    }
+
+    if (task.user_id !== req.userId) {
+      return res.status(401).json({ error: 'Requisição não autorizada' });
+    }
+
+    await task.destroy();
+
+    return res.send();
   }
 }
 
